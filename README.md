@@ -196,13 +196,16 @@ Se configuró el Security Group para permitir tráfico en el puerto 42000:
 
 ### Apagado Elegante
 
-```java
-Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-    System.out.println("\nIniciando apagado elegante...");
-    shutdown();
-}));
-```
+para el apagado implementamos una nueva peticion para shutdown e implementé un botón para el apagado elegante
 
+- le damos click al boton
+![](https://github.com/hakki17/AREP-taller4/blob/main/img/14.%20apagado.png)
+
+- pide confirmacion de cierre de progama
+![](https://github.com/hakki17/AREP-taller4/blob/main/img/15.png)
+
+- se cierra el programa
+![](https://github.com/hakki17/AREP-taller4/blob/main/img/16.png)
 
 ### Framework Personalizado
 
@@ -216,7 +219,7 @@ Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 
 Para ver la demostración completa del funcionamiento:
 
-## 
+### recomendacion para el video: Ponerlo en calidad 720 para mejor experiencia
 
 [![VIDEO PRUEBAS](https://github.com/hakki17/AREP-taller4/blob/main/img/13.png)](https://www.youtube.com/watch?v=axNdCg0jThQ)
 
