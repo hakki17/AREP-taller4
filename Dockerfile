@@ -2,9 +2,10 @@ FROM openjdk:17
  
 WORKDIR /usrapp/bin
  
-ENV PORT=6000
+ENV PORT=8080
  
 COPY /target/classes /usrapp/bin/classes
 COPY /target/dependency /usrapp/bin/dependency
+COPY /webroot ./webroot
  
-CMD ["java","-cp","./classes:./dependency/*","co.escuelaing.arep.dockeraws.RestServiceApplication"]
+CMD ["java","-cp","./classes:./dependency/*","co.escuelaing.arep.microspringboot.MicroSpringBoot"]
