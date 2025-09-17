@@ -14,20 +14,29 @@ import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.lang.annotation.Annotation;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
- * HttpServer que combina la base del Taller 2 con elementos específicos de la clase
+ * HttpServer que combina la base del Taller 2 con elementos específicos de la
+ * clase
+ *
  * @author maria.sanchez-m
  */
 public class HttpServer {
-    
+
     // ELEMENTO DE CLASE: Map services copiado exacto
     public static Map<String, Method> services = new HashMap<>();
-    
+
     // Elementos del Taller 2
     private static final int port = 8080;
     private static String directory = "webroot";
     private static final Map<String, String> dataStore = new HashMap<>();
+
+    private static ServerSocket serverSocket;
+    private static ExecutorService threadPool;
+    private static volatile boolean running = true;
 
     // MÉTODO DE CLASE: loadServices copiado exacto
     public static void loadServices() {
@@ -35,13 +44,13 @@ public class HttpServer {
 
         // Configurar carpeta de archivos estáticos
         server.staticfiles("webroot");
-        
+
         String packageName = "co.escuelaing.arep.microspringboot.examples"; // Ajusta según tu estructura
         String path = packageName.replace('.', '/');
         try {
             ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
             URL packageURL = classLoader.getResource(path);
-            
+
             if (packageURL == null) {
                 System.err.println("No se pudo encontrar el paquete: " + packageName);
                 return;
@@ -79,7 +88,6 @@ public class HttpServer {
         }
     }
 
-
     // MÉTODO DE CLASE: invokeService copiado y adaptado
     private static String invokeService(URI requri) {
         String header = "HTTP/1.1 200 OK\r\n"
@@ -89,17 +97,17 @@ public class HttpServer {
             HttpRequest req = new HttpRequest(requri);
             String key = requri.getPath().substring(4); // Quita "/app"
             Method m = services.get(key);
-            
+
             if (m == null) {
                 return header + "Servicio no encontrado: " + key;
             }
-            
+
             String[] argsValues = null;
-            
+
             // Verificar si el método tiene parámetros
             if (m.getParameterCount() > 0) {
                 RequestParam rp = (RequestParam) m.getParameterAnnotations()[0][0];
-                
+
                 if (requri.getQuery() == null) {
                     argsValues = new String[]{rp.defaultValue()};
                 } else {
@@ -109,9 +117,9 @@ public class HttpServer {
             } else {
                 argsValues = new String[0];
             }
-            
+
             return header + m.invoke(null, argsValues);
-            
+
         } catch (IllegalAccessException ex) {
             Logger.getLogger(HttpServer.class.getName()).log(Level.SEVERE, null, ex);
         } catch (InvocationTargetException ex) {
@@ -123,16 +131,39 @@ public class HttpServer {
     public static void startServer() throws IOException, URISyntaxException {
         ServerSocket serverSocket = new ServerSocket(port);
         System.out.println("Servidor iniciado en http://localhost:" + port);
+        System.out.println("Accede a /index.html para usar la interfaz web");
+        System.out.println("Usa /app/shutdown para apagar el servidor");
+
+        // Shutdown hook simple
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            System.out.println("\nApagando servidor elegantemente...");
+            try {
+                if (serverSocket != null) {
+                    serverSocket.close();
+                }
+            } catch (IOException e) {
+                System.err.println("Error cerrando servidor");
+            }
+            System.out.println("Servidor cerrado correctamente");
+        }));
+
         while (true) {
-            Socket clientSocket = serverSocket.accept();
-            handleRequestClient(clientSocket);
+            try {
+                Socket clientSocket = serverSocket.accept();
+                // Concurrencia: cada request en su propio hilo
+                new Thread(() -> handleRequestClient(clientSocket)).start();
+            } catch (IOException e) {
+                if (!serverSocket.isClosed()) {
+                    System.err.println("Error aceptando conexión: " + e.getMessage());
+                } else {
+                    break; // El servidor se cerró
+                }
+            }
         }
     }
 
     public static void handleRequestClient(Socket clientSocket) {
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream())); 
-            PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true); 
-            BufferedOutputStream dataOut = new BufferedOutputStream(clientSocket.getOutputStream())) {
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream())); PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true); BufferedOutputStream dataOut = new BufferedOutputStream(clientSocket.getOutputStream())) {
 
             String requestLine = in.readLine();
             if (requestLine != null) {
@@ -176,19 +207,15 @@ public class HttpServer {
         // // 2. Verificar servicios dinámicos (BiFunction)
         // if (services.containsKey(basePath)) {
         //     System.out.println("Manejando ruta dinámica: " + basePath);
-
         //     HttpRequest req = new HttpRequest(fileRequested);
         //     HttpResponse res = new HttpResponse(out);
-
         //     String responseBody = services.get(basePath).apply(req, res);
-
         //     out.println("HTTP/1.1 200 OK");
         //     out.println("Content-Type: text/html");
         //     out.println();
         //     out.println(responseBody);
         //     return;
         // }
-        
         // 3. Endpoints específicos del Taller 2
         if (fileRequested.startsWith("/app/greeting")) {
             String savedName = dataStore.getOrDefault("name", "usuario");
@@ -339,27 +366,52 @@ public class HttpServer {
     // public static void get(String path, BiFunction<HttpRequest, HttpResponse, String> handler) {
     //     services.put(path, handler);
     // }
-    
     public static void staticfiles(String path) {
         directory = path;
     }
-    
+
     public static Map<String, String> getDataStore() {
         return dataStore;
     }
-    
+
     // public static Map<String, BiFunction<HttpRequest, HttpResponse, String>> getServices() {
     //     return services;
     // }
-
     // MÉTODO PRINCIPAL que integra todo
     public static void runServer() throws IOException, URISyntaxException {
-    // Solución aquí
+        // Solución aquí
         loadServices();
         System.out.println("Servicios registrados:");
         services.forEach((k, v) -> System.out.println(k + " -> " + v.getName()));
 
         startServer();
+    }
+
+    private static void shutdown() {
+        System.out.println("Cerrando servidor...");
+        running = false;
+
+        try {
+            if (serverSocket != null && !serverSocket.isClosed()) {
+                serverSocket.close();
+            }
+        } catch (IOException e) {
+            System.err.println("Error cerrando socket: " + e.getMessage());
+        }
+
+        if (threadPool != null) {
+            threadPool.shutdown();
+            try {
+                if (!threadPool.awaitTermination(30, TimeUnit.SECONDS)) {
+                    System.out.println("Forzando cierre de hilos...");
+                    threadPool.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                threadPool.shutdownNow();
+            }
+        }
+
+        System.out.println("Servidor apagado correctamente");
     }
 
 }
