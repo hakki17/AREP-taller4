@@ -216,7 +216,9 @@ Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 
 Para ver la demostración completa del funcionamiento:
 
-[![Video Demostración](videofinal.mp4)](img/videofinal.mp4)
+## 
+
+[![VIDEO PRUEBAS](https://github.com/hakki17/AREP-taller4/blob/main/img/13.png)](https://www.youtube.com/watch?v=axNdCg0jThQ)
 
 ## Instrucciones de Ejecución
 
