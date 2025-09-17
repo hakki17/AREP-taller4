@@ -219,6 +219,7 @@ para el apagado implementamos una nueva peticion para shutdown e implementé un 
 
 Para ver la demostración completa del funcionamiento:
 
+### Dar click a la imagen de abajo para que se redireccione al link de youtube
 ### recomendacion para el video: Ponerlo en calidad 720 para mejor experiencia
 
 [![VIDEO PRUEBAS](https://github.com/hakki17/AREP-taller4/blob/main/img/13.png)](https://www.youtube.com/watch?v=axNdCg0jThQ)
