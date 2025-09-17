@@ -216,7 +216,7 @@ Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 
 Para ver la demostración completa del funcionamiento:
 
-[![Video Demostración](videofinal.mp4)](videofinal.mp4)
+[![Video Demostración](videofinal.mp4)](img/videofinal.mp4)
 
 ## Instrucciones de Ejecución
 
