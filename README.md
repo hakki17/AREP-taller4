@@ -46,14 +46,14 @@ Cliente → AWS Load Balancer → EC2 Instance → Docker Container → HttpServ
   - `helloworld()`: Mensaje simple de bienvenida
 
 #### 3. **Sistema de Anotaciones**
-- **@RestController**: Marca clases como controladores REST
-- **@GetMapping**: Define rutas GET con valores específicos
-- **@RequestParam**: Mapea parámetros de query con valores por defecto
+- **@RestController**
+- **@GetMapping**
+- **@RequestParam**
 
 #### 4. **Clases de Utilidad**
-- **HttpRequest**: Procesamiento de peticiones HTTP
-- **HttpResponse**: Manejo de respuestas HTTP
-- **Service**: Interfaz para servicios personalizados
+- **HttpRequest**
+- **HttpResponse**
+- **Service**
 
 ## Generación de Imágenes Docker
 
@@ -216,7 +216,7 @@ Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 
 Para ver la demostración completa del funcionamiento:
 
-![Video Demostración](https://github.com/hakki17/AREP-taller4/blob/main/img/videoFinalFinal.mp4)
+[![Video Demostración](videofinal.mp4)](videofinal.mp4)
 
 ## Instrucciones de Ejecución
 
